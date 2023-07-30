@@ -68,3 +68,4 @@ temp
 coverage
 pubspec.lock
 .fvm
+pnpm-lock.yaml
