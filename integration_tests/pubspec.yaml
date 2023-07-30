@@ -26,7 +26,11 @@ dependencies:
   flutter:
     sdk: flutter
   image: ^3.0.2
-  webf_websocket: ^1.1.0-beta.2
+  webf_websocket:
+    git:
+      url: https://github.com/AstroxNetwork/flutter_webf_plugins.git
+      ref: main
+      path: packages/webf_websocket/
   waterfall_flow: ^3.0.1
   image_compare: ^1.1.2
 

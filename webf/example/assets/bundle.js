@@ -10,4 +10,13 @@ p.appendChild(text1);
 p.appendChild(br);
 p.appendChild(text2);
 
+var kkk = BigInt(3);
+var ddd = 3n;
+const t = new TextEncoder();
+const bytes = t.encode('asdf');
+console.log(bytes);
+
+console.log({ kkk });
+console.log({ ddd });
 document.body.appendChild(p);
+console.log(globalThis.callf('test', 's'));

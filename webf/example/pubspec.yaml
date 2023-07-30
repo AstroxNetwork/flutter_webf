@@ -6,12 +6,17 @@ description: Demonstrates how to use the webf plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
   webf: ^0.10.0
+  webf_callf:
+    git:
+      url: https://github.com/AstroxNetwork/flutter_webf_plugins.git
+      ref: main
+      path: packages/webf_callf/webf_callf
 
 # When depending on this package from a real application,
 # you should remove the following overrides.
@@ -64,7 +69,6 @@ flutter:
     - family: AlibabaSans-Black
       fonts:
         - asset: fonts/AlibabaSans-Black.otf
-
 
   assets:
     - assets/

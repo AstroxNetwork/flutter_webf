@@ -6,8 +6,10 @@
 import 'package:flutter/material.dart';
 import 'package:webf/webf.dart';
 import 'package:webf/devtools.dart';
+import 'package:webf_callf/webf_callf.dart';
 
 void main() {
+  WebFCallF.register({});
   runApp(MyApp());
 }
 
@@ -93,9 +95,17 @@ class _MyHomePageState extends State<MyBrowser> {
           child: Column(
             children: [
               _kraken = WebF(
-                devToolsService: ChromeDevToolsService(),
-                viewportWidth: viewportSize.width - queryData.padding.horizontal,
-                viewportHeight: viewportSize.height - appBar.preferredSize.height - queryData.padding.vertical,
+                // devToolsService: ChromeDevToolsService(),
+                onControllerCreated: (controller) {
+                  controller.onJSLog = (l, s) {
+                    print('$l: $s');
+                  };
+                },
+                viewportWidth:
+                    viewportSize.width - queryData.padding.horizontal,
+                viewportHeight: viewportSize.height -
+                    appBar.preferredSize.height -
+                    queryData.padding.vertical,
                 bundle: WebFBundle.fromUrl('assets:assets/bundle.html'),
               ),
             ],
