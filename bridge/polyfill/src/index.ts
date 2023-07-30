@@ -1,7 +1,7 @@
 /*
-* Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
-* Copyright (C) 2022-present The WebF authors. All rights reserved.
-*/
+ * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
+ * Copyright (C) 2022-present The WebF authors. All rights reserved.
+ */
 
 import './dom';
 import { console } from './console';
@@ -19,7 +19,8 @@ import { DOMException } from './dom-exception';
 import { Storage } from './storage';
 import { URL } from './url';
 import { webf } from './webf';
-import { WebSocket } from './websocket'
+import { TextEncoder, TextDecoder } from './encoding';
+import { WebSocket } from './websocket';
 
 defineGlobalProperty('console', console);
 defineGlobalProperty('Request', Request);
@@ -39,6 +40,8 @@ defineGlobalProperty('URLSearchParams', URLSearchParams);
 defineGlobalProperty('DOMException', DOMException);
 defineGlobalProperty('URL', URL);
 defineGlobalProperty('webf', webf);
+defineGlobalProperty('TextEncoder', TextEncoder);
+defineGlobalProperty('TextDecoder', TextDecoder);
 defineGlobalProperty('WebSocket', WebSocket);
 
 function defineGlobalProperty(key: string, value: any, isEnumerable: boolean = true) {
@@ -46,6 +49,6 @@ function defineGlobalProperty(key: string, value: any, isEnumerable: boolean = t
     value: value,
     enumerable: isEnumerable,
     writable: true,
-    configurable: true
+    configurable: true,
   });
 }

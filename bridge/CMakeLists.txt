@@ -147,7 +147,7 @@ if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
   endif()
 
   list(APPEND QUICK_JS_SOURCE
-    # third_party/quickjs/src/libbf.c
+    third_party/quickjs/src/libbf.c
     third_party/quickjs/src/cutils.c
     third_party/quickjs/src/libregexp.c
     third_party/quickjs/src/libunicode.c
@@ -523,7 +523,7 @@ if ($ENV{WEBF_JS_ENGINE} MATCHES "quickjs")
   # https://stackoverflow.com/questions/14735010/how-do-you-get-gccs-builtin-frame-address-to-work-with-o2
   add_compile_options(-fno-optimize-sibling-calls -fno-omit-frame-pointer)
   endif()
-  target_compile_options(quickjs PUBLIC -DCONFIG_VERSION=${\"QUICKJS_VERSION\"})
+  target_compile_options(quickjs PUBLIC -DCONFIG_BIGNUM -DCONFIG_VERSION=${\"QUICKJS_VERSION\"})
 
 endif ()
 
