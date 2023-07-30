@@ -13,7 +13,7 @@
     "es6-promise": "^4.2.8",
     "event-emitter": "^0.3.5",
     "expect": "^25.1.0",
-    "qjsc": "git://git@github.com:AstroxNetwork/flutter_webf_node_qjsc.git",
+    "qjsc": "git+https://git@github.com:AstroxNetwork/flutter_webf_node_qjsc.git",
     "ts-jest": "^24.3.0",
     "tslib": "^1.11.2"
   },
