@@ -11,14 +11,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  webf: ^0.10.0
+  webf:
+    path: ../
   webf_callf:
     git:
       url: https://github.com/AstroxNetwork/flutter_webf_plugins.git
       ref: main
       path: packages/webf_callf/webf_callf
 
-  audio:
+  webf_audio_player:
     git:
       url: https://github.com/AstroxNetwork/flutter_webf_plugins.git
       ref: main
@@ -34,7 +35,7 @@ dependency_overrides:
     path: ../
   webf_callf:
     path: ../../../plugins/packages/webf_callf
-  audio:
+  webf_audio_player:
     path: ../../../plugins/packages/audio
 
 # The following section is specific to Flutter.

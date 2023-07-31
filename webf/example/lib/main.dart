@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:webf/webf.dart';
 import 'package:webf/devtools.dart';
 import 'package:webf_callf/webf_callf.dart';
-import 'package:audio/audio.dart';
+import 'package:webf_audio_player/webf_audio_player.dart';
 
 void main() {
   WebFCallF.register({});
