@@ -7,10 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:webf/webf.dart';
 import 'package:webf/devtools.dart';
 import 'package:webf_callf/webf_callf.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:webf_audio_player/webf_audio_player.dart';
 
 void main() {
   WebFCallF.register({});
+  MediaKit.ensureInitialized();
   AudioPlayerModule.register();
   runApp(MyApp());
 }

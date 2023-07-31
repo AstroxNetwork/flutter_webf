@@ -25,6 +25,8 @@ dependencies:
       ref: main
       path: packages/audio
 
+  media_kit: any
+
 # When depending on this package from a real application,
 # you should remove the following overrides.
 # See https://dart.dev/tools/pub/dependencies#version-constraints
