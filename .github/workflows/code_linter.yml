@@ -18,8 +18,8 @@ jobs:
         run: |
           brew install cppcheck
           cd bridge/polyfill
-          npm i
-          npm run build
+          npm i -g pnpm && pnpm install
+          pnpm run build
           cd ../
           cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
           cppcheck --project=compile_commands.json -ithird_party --enable=all --suppress=missingIncludeSystem --quiet
@@ -40,21 +40,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - uses: DoozyX/clang-format-lint-action@v0.13
-      with:
-        source: './bridge'
-        exclude: './bridge/third_party/*'
-        extensions: 'h,cc,c'
-        clangFormatVersion: 12
-        inplace: True
-    - uses: EndBug/add-and-commit@v4
-      with:
-        author_name: openwebf-bot
-        author_email: openwebf@openwebf.com
-        message: 'Committing clang-format changes'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: DoozyX/clang-format-lint-action@v0.13
+        with:
+          source: './bridge'
+          exclude: './bridge/third_party/*'
+          extensions: 'h,cc,c'
+          clangFormatVersion: 12
+          inplace: True
+      - uses: EndBug/add-and-commit@v4
+        with:
+          author_name: openwebf-bot
+          author_email: openwebf@openwebf.com
+          message: 'Committing clang-format changes'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

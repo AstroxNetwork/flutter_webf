@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 
 env:
-  nodeVersion: "16"
-  cmakeVersion: "3.26.3"
-  flutterVersion: "3.10.5"
+  nodeVersion: '18'
+  cmakeVersion: '3.26.3'
+  flutterVersion: '3.10.5'
 
 jobs:
   build_windows-app_in_windows:
@@ -27,9 +27,9 @@ jobs:
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
           cmake-version: ${{ env.cmakeVersion }}
-      - run: npm i
+      - run: npm i -g pnpm && pnpm install
       - name: Build windows dll
-        run: npm run build:bridge:windows:release
+        run: pnpm run build:bridge:windows:release
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.flutterVersion }}
@@ -53,13 +53,13 @@ jobs:
           node-version: ${{ env.nodeVersion }}
       - uses: actions/setup-java@v3
         with:
-          distribution: "temurin"
-          java-version: "11"
+          distribution: 'temurin'
+          java-version: '11'
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
           cmake-version: ${{ env.cmakeVersion }}
-      - run: npm i
-      - run: npm run build:bridge:android:release
+      - run: npm i -g pnpm && pnpm install
+      - run: pnpm run build:bridge:android:release
 
       # Install Flutter SDK
       - uses: subosito/flutter-action@v2
@@ -86,8 +86,8 @@ jobs:
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
           cmake-version: ${{ env.cmakeVersion }}
-      - run: npm i
-      - run: npm run build:bridge:ios:release
+      - run: npm i -g pnpm && pnpm install
+      - run: pnpm run build:bridge:ios:release
 
       - uses: subosito/flutter-action@v2
         with:
@@ -113,8 +113,8 @@ jobs:
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
           cmake-version: ${{ env.cmakeVersion }}
-      - run: npm i
-      - run: npm run build:bridge:macos:release
+      - run: npm i -g pnpm && pnpm install
+      - run: pnpm run build:bridge:macos:release
 
       - uses: subosito/flutter-action@v2
         with:
@@ -144,8 +144,8 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install chrpath ninja-build pkg-config libgtk-3-dev -y
-      - run: npm i
-      - run: npm run build:bridge:linux:release
+      - run: npm i -g pnpm && pnpm install
+      - run: pnpm run build:bridge:linux:release
 
       - uses: subosito/flutter-action@v2
         with:
