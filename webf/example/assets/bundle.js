@@ -20,3 +20,7 @@ console.log({ kkk });
 console.log({ ddd });
 document.body.appendChild(p);
 console.log(globalThis.callf('test', 's'));
+
+var race = document.getElementById('race');
+
+console.log(race.getAttribute('duration'));
