@@ -14,6 +14,7 @@ void main() {
   WebFCallF.register({});
   MediaKit.ensureInitialized();
   AudioPlayerModule.register();
+
   runApp(MyApp());
 }
 

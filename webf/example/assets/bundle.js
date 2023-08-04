@@ -20,8 +20,3 @@ console.log({ kkk });
 console.log({ ddd });
 document.body.appendChild(p);
 console.log(globalThis.callf('test', 's'));
-
-let audio = new AudioPlayer('http://downsc.chinaz.net/Files/DownLoad/sound1/201906/11582.mp3');
-(async () => {
-  await audio.play();
-})();
