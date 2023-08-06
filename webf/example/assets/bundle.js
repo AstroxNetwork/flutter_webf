@@ -21,6 +21,14 @@ console.log({ ddd });
 document.body.appendChild(p);
 console.log(globalThis.callf('test', 's'));
 
-var race = document.getElementById('race');
+// const audio = new AudioPlayer('http://downsc.chinaz.net/Files/DownLoad/sound1/201906/11582.mp3');
+// console.log(audio);
+(async () => {
+  var aaa = new AudioPlayer('http://downsc.chinaz.net/Files/DownLoad/sound1/201906/11582.mp3');
+  await aaa.initialize();
 
-console.log(race.getAttribute('duration'));
+  // var ss = new WebSocket('wss://eth-mainnet.g.alchemy.com/v2/_iDI10Kts6my6A2_rI8LTVnwcR4nOiNE');
+  aaa.onduration = e => {
+    console.log(e);
+  };
+})();
