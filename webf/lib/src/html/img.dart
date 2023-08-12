@@ -485,7 +485,7 @@ class ImageElement extends Element {
     }
 
     // Make sure all style and properties are ready before decode begins.
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       ImageProvider? provider = _currentImageProvider;
       if (updateImageProvider || provider == null) {
         // Image should be resized based on different ratio according to object-fit value.
