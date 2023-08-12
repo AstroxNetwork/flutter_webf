@@ -2,6 +2,7 @@
  * Copyright (C) 2019-2022 The Kraken authors. All rights reserved.
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
+import 'dart:developer' as dev;
 
 import 'package:flutter/material.dart';
 import 'package:webf/webf.dart';
@@ -59,6 +60,10 @@ class _MyHomePageState extends State<MyBrowser> {
     ),
   );
 
+  void print(Object msg, {Object? e, StackTrace? s, int level = 0}) {
+    dev.log(msg.toString(), name: 'example', error: e, stackTrace: s, level: level);
+  }
+
   @override
   Widget build(BuildContext context) {
     final MediaQueryData queryData = MediaQuery.of(context);
@@ -101,11 +106,14 @@ class _MyHomePageState extends State<MyBrowser> {
           // in the middle of the parent.
           child: Column(
             children: [
-              _kraken = WebF(
-                // devToolsService: ChromeDevToolsService(),
+              _kraken ??= WebF(
+                devToolsService: ChromeDevToolsService(),
                 onControllerCreated: (controller) {
                   controller.onJSLog = (l, s) {
-                    print('$l: $s');
+                    print('onJSLog: $s', level: l);
+                  };
+                  controller.onLoadError = (e, s) {
+                    print('onLoadError', e: e, s: s);
                   };
                 },
                 viewportWidth:
@@ -114,6 +122,7 @@ class _MyHomePageState extends State<MyBrowser> {
                     appBar.preferredSize.height -
                     queryData.padding.vertical,
                 bundle: WebFBundle.fromUrl('assets:assets/bundle.html'),
+                onJSError: (e) => print('onJSError', e: e),
               ),
             ],
           ),
