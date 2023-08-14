@@ -403,6 +403,7 @@ class ImageElement extends Element {
       additionalConstraints: BoxConstraints.tight(Size(width, height)),
       child: RenderFittedBox(
         fit: renderStyle.objectFit,
+        alignment: renderStyle.objectPosition,
         child: RenderConstrainedBox(
           additionalConstraints: BoxConstraints.tight(pictureInfo.size),
           child: RenderVectorGraphic(
