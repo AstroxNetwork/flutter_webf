@@ -193,6 +193,12 @@ class ImageElement extends Element {
 
       ownerDocument.inactiveRenderObjects.add(_renderImage);
       _renderImage = null;
+
+      /// Drop SVGs.
+      ownerDocument.inactiveRenderObjects.add(_renderSVGGraphic);
+      _renderSVGGraphic = null;
+      _cachedSvgCacheKey = null;
+      _cachedPictureInfo = null;
     }
   }
 
@@ -218,6 +224,8 @@ class ImageElement extends Element {
 
     _completerHandle?.dispose();
     _completerHandle = null;
+    _cachedSvgCacheKey = null;
+    _cachedPictureInfo = null;
     _cachedImageInfo = null;
     _currentImageProvider = null;
   }
