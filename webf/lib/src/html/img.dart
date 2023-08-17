@@ -3,18 +3,20 @@
  * Copyright (C) 2022-present The WebF authors. All rights reserved.
  */
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'dart:ui';
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:webf/css.dart';
 import 'package:webf/dom.dart';
 import 'package:webf/bridge.dart';
 import 'package:webf/foundation.dart';
 import 'package:webf/painting.dart';
 import 'package:webf/rendering.dart';
+import 'package:vector_graphics/src/render_vector_graphic.dart';
 
 const String IMAGE = 'IMG';
 const String NATURAL_WIDTH = 'naturalWidth';
@@ -31,6 +33,11 @@ const Map<String, dynamic> _defaultStyle = {
 
 // The HTMLImageElement.
 class ImageElement extends Element {
+  /// Render SVGs
+  RenderBox? _renderSVGGraphic;
+  SvgCacheKey? _cachedSvgCacheKey;
+  PictureInfo? _cachedPictureInfo;
+
   // The render box to draw image.
   WebFRenderImage? _renderImage;
 
@@ -186,6 +193,12 @@ class ImageElement extends Element {
 
       ownerDocument.inactiveRenderObjects.add(_renderImage);
       _renderImage = null;
+
+      /// Drop SVGs.
+      ownerDocument.inactiveRenderObjects.add(_renderSVGGraphic);
+      _renderSVGGraphic = null;
+      _cachedSvgCacheKey = null;
+      _cachedPictureInfo = null;
     }
   }
 
@@ -211,8 +224,19 @@ class ImageElement extends Element {
 
     _completerHandle?.dispose();
     _completerHandle = null;
+    _cachedSvgCacheKey = null;
+    _cachedPictureInfo = null;
     _cachedImageInfo = null;
     _currentImageProvider = null;
+  }
+
+  Color? get _styleColor {
+    String color = style.getPropertyValue(COLOR);
+    if (color.isNotEmpty && isRendererAttached) {
+      Color? c = CSSColor.parseColor(color, renderStyle: renderStyle);
+      return c;
+    }
+    return null;
   }
 
   // Width and height set through style declaration.
@@ -292,8 +316,13 @@ class ImageElement extends Element {
   }
 
   void _constructImage() {
-    RenderImage image = _renderImage = _createRenderImageBox();
-    addChild(image);
+    if (_resolvedUri!.path.endsWith('.svg')) {
+      RenderBox graphic = _renderSVGGraphic = _createRenderSVGGraphic();
+      addChild(graphic);
+    } else {
+      RenderImage image = _renderImage = _createRenderImageBox();
+      addChild(image);
+    }
   }
 
   // To prevent trigger load event more than once.
@@ -317,7 +346,7 @@ class ImageElement extends Element {
     if (!complete) return;
 
     // Resize when image render object has created.
-    if (_renderImage == null) return;
+    if (_renderImage == null && _renderSVGGraphic == null) return;
 
     if (_styleWidth == null && _attrWidth != null) {
       // The intrinsic width of the image in pixels. Must be an integer without a unit.
@@ -332,8 +361,8 @@ class ImageElement extends Element {
     renderStyle.intrinsicHeight = naturalHeight.toDouble();
 
     // Set naturalWidth and naturalHeight to renderImage to avoid relayout when size didn't changes.
-    _renderImage!.width = naturalWidth.toDouble();
-    _renderImage!.height = naturalHeight.toDouble();
+    _renderImage?.width = naturalWidth.toDouble();
+    _renderImage?.height = naturalHeight.toDouble();
 
     if (naturalWidth == 0.0 || naturalHeight == 0.0) {
       renderStyle.aspectRatio = null;
@@ -347,6 +376,46 @@ class ImageElement extends Element {
       image: _cachedImageInfo?.image,
       fit: renderStyle.objectFit,
       alignment: renderStyle.objectPosition,
+    );
+  }
+
+  RenderBox _createRenderSVGGraphic() {
+    if (_cachedPictureInfo == null) {
+      return _EmptyRenderBox();
+    }
+
+    double width = this.width.toDouble();
+    double height = this.height.toDouble();
+    final pictureInfo = _cachedPictureInfo!;
+    if (width == 0 && height == 0) {
+      width = pictureInfo.size.width;
+      height = pictureInfo.size.height;
+    } else if (height != 0 && !pictureInfo.size.isEmpty) {
+      width = height / pictureInfo.size.height * pictureInfo.size.width;
+    } else if (width != 0 && !pictureInfo.size.isEmpty) {
+      height = width / pictureInfo.size.width * pictureInfo.size.height;
+    }
+
+    double scale = 1.0;
+    scale = math.min(pictureInfo.size.width / width, pictureInfo.size.height / height);
+
+    return RenderConstrainedBox(
+      additionalConstraints: BoxConstraints.tight(Size(width, height)),
+      child: RenderFittedBox(
+        fit: renderStyle.objectFit,
+        alignment: renderStyle.objectPosition,
+        child: RenderConstrainedBox(
+          additionalConstraints: BoxConstraints.tight(pictureInfo.size),
+          child: RenderVectorGraphic(
+            pictureInfo,
+            _cachedSvgCacheKey!,
+            _styleColor == null ? null : ui.ColorFilter.mode(_styleColor!, BlendMode.srcIn),
+            ownerDocument.controller.ownerFlutterView.devicePixelRatio,
+            null,
+            scale,
+          ),
+        ),
+      ),
     );
   }
 
@@ -401,9 +470,28 @@ class ImageElement extends Element {
   // Create an ImageStream that decodes the obtained image.
   // If imageElement has property size or width/height property on [renderStyle],
   // The image will be encoded into a small size for better rasterization performance.
-  Future<void> _decode({bool updateImageProvider = false}) async {
-    if (_isImageEncoding || _isInLazyLoading) return;
+  Future<void> _decode({bool updateImageProvider = false}) {
+    if (_isImageEncoding || _isInLazyLoading) return Future<void>.value();
     Completer completer = Completer();
+
+    final bool isSVGPath = _resolvedUri!.path.endsWith('.svg');
+    if (isSVGPath) {
+      Future(() async {
+        final bytes = await _obtainImage(_resolvedUri!);
+        final loader = SvgBytesLoader(bytes);
+        _cachedSvgCacheKey = loader.cacheKey(null);
+        _cachedPictureInfo = await vg.loadPicture(loader, null);
+      }).then((_) {
+        SchedulerBinding.instance.scheduleFrame();
+        SchedulerBinding.instance.addPostFrameCallback((timestamp) async {
+          _handleImageFrame(null, false);
+        });
+        completer.complete();
+      }).catchError((e, s) {
+        completer.completeError(e, s);
+      });
+      return completer.future;
+    }
 
     // Make sure all style and properties are ready before decode begins.
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
@@ -423,7 +511,7 @@ class ImageElement extends Element {
         );
       }
 
-      FlutterView ownerFlutterView = ownerDocument.controller.ownerFlutterView;
+      ui.FlutterView ownerFlutterView = ownerDocument.controller.ownerFlutterView;
       // Try to make sure that this image can be encoded into a smaller size.
       int? cachedWidth = renderStyle.width.value != null && width > 0 && width.isFinite
           ? (width * ownerFlutterView.devicePixelRatio).toInt()
@@ -489,7 +577,7 @@ class ImageElement extends Element {
 
   // Callback when image are loaded, encoded and available to use.
   // This callback may fire multiple times when image have multiple frames (such as an animated GIF).
-  void _handleImageFrame(ImageInfo imageInfo, bool synchronousCall) {
+  void _handleImageFrame(ImageInfo? imageInfo, bool synchronousCall) {
     _replaceImage(info: imageInfo);
     _frameCount++;
 
@@ -538,15 +626,16 @@ class ImageElement extends Element {
       // If the _completerHandle are not null, there must be a imageProvider available in the imageCache.
       if (_shouldLazyLoading && _completerHandle == null) {
         RenderReplaced? renderReplaced = renderBoxModel as RenderReplaced?;
-        FlutterView ownerFlutterView = ownerDocument.controller.ownerFlutterView;
+        ui.FlutterView ownerFlutterView = ownerDocument.controller.ownerFlutterView;
         renderReplaced
           ?..isInLazyRendering = true
           // Expand the intersecting area to preload images before they become visible to users.
           ..intersectPadding = Rect.fromLTRB(
-              ownerFlutterView.physicalSize.width,
-              ownerFlutterView.physicalSize.height,
-              ownerFlutterView.physicalSize.width,
-              ownerFlutterView.physicalSize.height)
+            ownerFlutterView.physicalSize.width,
+            ownerFlutterView.physicalSize.height,
+            ownerFlutterView.physicalSize.width,
+            ownerFlutterView.physicalSize.height,
+          )
           // When detach renderer, all listeners will be cleared.
           ..addIntersectionChangeListener(_handleIntersectionChange);
       } else {
@@ -683,3 +772,5 @@ class ImageRequest {
     return data;
   }
 }
+
+class _EmptyRenderBox extends RenderBox {}
