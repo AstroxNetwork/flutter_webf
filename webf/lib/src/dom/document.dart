@@ -68,8 +68,6 @@ class Document extends ContainerNode {
   RenderViewportBox? _viewport;
   GestureListener? gestureListener;
 
-  String? get title => _title ?? '';
-  String? _title;
   Map<String, List<Element>> elementsByID = {};
   Map<String, List<Element>> elementsByName = {};
 
@@ -188,7 +186,10 @@ class Document extends ContainerNode {
     properties['hidden'] = BindingObjectProperty(getter: () => hidden,);
     properties['title'] = BindingObjectProperty(
       getter: () => _title ?? '',
-      setter: (value) => ownerDocument.controller.onTitleChanged?.call(value ?? ''),
+      setter: (value) {
+        _title = value ?? '';
+        ownerDocument.controller.onTitleChanged?.call(title);
+      },
     );
   }
 
@@ -251,6 +252,9 @@ class Document extends ContainerNode {
   }
 
   dynamic get compatMode => _compatMode;
+
+  String get title => _title ?? '';
+  String? _title;
 
   get domain {
     Uri uri = Uri.parse(controller.url);
