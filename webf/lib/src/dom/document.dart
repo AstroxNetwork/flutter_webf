@@ -68,6 +68,8 @@ class Document extends ContainerNode {
   RenderViewportBox? _viewport;
   GestureListener? gestureListener;
 
+  String? get title => _title ?? '';
+  String? _title;
   Map<String, List<Element>> elementsByID = {};
   Map<String, List<Element>> elementsByName = {};
 
@@ -184,6 +186,10 @@ class Document extends ContainerNode {
     properties['readyState'] = BindingObjectProperty(getter: () => readyState,);
     properties['visibilityState'] = BindingObjectProperty(getter: () => visibilityState,);
     properties['hidden'] = BindingObjectProperty(getter: () => hidden,);
+    properties['title'] = BindingObjectProperty(
+      getter: () => _title ?? '',
+      setter: (value) => ownerDocument.controller.onTitleChanged?.call(value ?? ''),
+    );
   }
 
   @override
