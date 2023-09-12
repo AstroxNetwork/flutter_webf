@@ -53,6 +53,7 @@ class MyBrowser extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyBrowser> {
+  final TextEditingController textEditingController = TextEditingController();
   OutlineInputBorder outlineBorder = OutlineInputBorder(
     borderSide: BorderSide(color: Colors.transparent, width: 0.0),
     borderRadius: const BorderRadius.all(
@@ -67,7 +68,6 @@ class _MyHomePageState extends State<MyBrowser> {
   @override
   Widget build(BuildContext context) {
     final MediaQueryData queryData = MediaQuery.of(context);
-    final TextEditingController textEditingController = TextEditingController();
 
     WebF? _kraken;
     AppBar appBar = AppBar(
@@ -100,32 +100,24 @@ class _MyHomePageState extends State<MyBrowser> {
 
     final Size viewportSize = queryData.size;
     return Scaffold(
-        appBar: appBar,
-        body: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
-          child: Column(
-            children: [
-              _kraken ??= WebF(
-                devToolsService: ChromeDevToolsService(),
-                onControllerCreated: (controller) {
-                  controller.onJSLog = (l, s) {
-                    print('onJSLog: $s', level: l);
-                  };
-                  controller.onLoadError = (e, s) {
-                    print('onLoadError', e: e, s: s);
-                  };
-                },
-                viewportWidth:
-                    viewportSize.width - queryData.padding.horizontal,
-                viewportHeight: viewportSize.height -
-                    appBar.preferredSize.height -
-                    queryData.padding.vertical,
-                bundle: WebFBundle.fromUrl('assets:assets/bundle.html'),
-                onJSError: (e) => print('onJSError', e: e),
-              ),
-            ],
-          ),
-        ));
+      resizeToAvoidBottomInset: false,
+      appBar: appBar,
+      body: _kraken ??= WebF(
+        resizeToAvoidBottomInsets: false,
+        devToolsService: ChromeDevToolsService(),
+        onControllerCreated: (controller) {
+          controller.onJSLog = (l, s) {
+            print('onJSLog: $s', level: l);
+          };
+          controller.onLoadError = (e, s) {
+            print('onLoadError', e: e, s: s);
+          };
+        },
+        viewportWidth: viewportSize.width - queryData.padding.horizontal,
+        viewportHeight: viewportSize.height - appBar.preferredSize.height - queryData.padding.vertical,
+        bundle: WebFBundle.fromUrl('assets:assets/bundle.html'),
+        onJSError: (e) => print('onJSError', e: e),
+      ),
+    );
   }
 }

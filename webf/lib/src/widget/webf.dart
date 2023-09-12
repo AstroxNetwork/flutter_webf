@@ -68,6 +68,8 @@ class WebF extends StatefulWidget {
   /// The initial cookies to set.
   final List<Cookie>? initialCookies;
 
+  final bool resizeToAvoidBottomInsets;
+
   WebFController? get controller {
     return WebFController.getControllerOfName(shortHash(this));
   }
@@ -130,7 +132,8 @@ class WebF extends StatefulWidget {
       // Callback functions when loading Javascript scripts failed.
       this.onLoadError,
       this.animationController,
-      this.onJSError})
+      this.onJSError,
+      this.resizeToAvoidBottomInsets = true})
       : super(key: key);
 
   @override
@@ -221,6 +224,7 @@ class WebFState extends State<WebF> with RouteAware {
           onCustomElementAttached: onCustomElementWidgetAdd,
           onCustomElementDetached: onCustomElementWidgetRemove,
           children: customElementWidgets.toList(),
+          resizeToAvoidBottomInsets: widget.resizeToAvoidBottomInsets,
         ),
       ),
     );
@@ -231,6 +235,14 @@ class WebFState extends State<WebF> with RouteAware {
     super.didChangeDependencies();
     if (widget.routeObserver != null) {
       widget.routeObserver!.subscribe(this, ModalRoute.of(context)!);
+    }
+  }
+
+  @override
+  void didUpdateWidget(WebF oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.resizeToAvoidBottomInsets != widget.resizeToAvoidBottomInsets) {
+      widget.controller?.resizeToAvoidBottomInsets = widget.resizeToAvoidBottomInsets;
     }
   }
 
@@ -287,6 +299,7 @@ class WebFRootRenderObjectWidget extends MultiChildRenderObjectWidget {
   final OnCustomElementAttached onCustomElementAttached;
   final OnCustomElementDetached onCustomElementDetached;
   final FlutterView currentView;
+  final bool resizeToAvoidBottomInsets;
 
   // Creates a widget that visually hides its child.
   WebFRootRenderObjectWidget(
@@ -296,6 +309,7 @@ class WebFRootRenderObjectWidget extends MultiChildRenderObjectWidget {
     required this.currentView,
     required this.onCustomElementAttached,
     required this.onCustomElementDetached,
+    this.resizeToAvoidBottomInsets = true,
   })  : _webfWidget = widget,
         super(key: key, children: children);
 
@@ -324,7 +338,8 @@ class WebFRootRenderObjectWidget extends MultiChildRenderObjectWidget {
         onCustomElementDetached: onCustomElementDetached,
         initialCookies: _webfWidget.initialCookies,
         uriParser: _webfWidget.uriParser,
-        ownerFlutterView: currentView);
+        ownerFlutterView: currentView,
+        resizeToAvoidBottomInsets: resizeToAvoidBottomInsets);
 
     (context as _WebFRenderObjectElement).controller = controller;
 

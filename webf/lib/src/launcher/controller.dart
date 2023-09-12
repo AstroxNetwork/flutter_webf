@@ -630,7 +630,9 @@ class WebFViewController implements WidgetsBindingObserver {
 
   @override
   void didChangeMetrics() {
-    double bottomInset = rootController.ownerFlutterView.viewInsets.bottom / rootController.ownerFlutterView.devicePixelRatio;
+    double bottomInset = rootController.resizeToAvoidBottomInsets
+        ? rootController.ownerFlutterView.viewInsets.bottom / rootController.ownerFlutterView.devicePixelRatio
+        : 0;
     _prevViewInsets ??= rootController.ownerFlutterView.viewInsets;
 
     if (_prevViewInsets!.bottom > rootController.ownerFlutterView.viewInsets.bottom) {
@@ -771,6 +773,7 @@ class WebFController {
   final List<Cookie>? initialCookies;
 
   final ui.FlutterView ownerFlutterView;
+  bool resizeToAvoidBottomInsets;
 
   String? _name;
   String? get name => _name;
@@ -812,6 +815,7 @@ class WebFController {
     this.uriParser,
     this.initialCookies,
     required this.ownerFlutterView,
+    this.resizeToAvoidBottomInsets = true,
   })  : _name = name,
         _entrypoint = entrypoint,
         _gestureListener = gestureListener {
@@ -827,7 +831,7 @@ class WebFController {
       rootController: this,
       navigationDelegate: navigationDelegate ?? WebFNavigationDelegate(),
       gestureListener: _gestureListener,
-      initialCookies: initialCookies
+      initialCookies: initialCookies,
     );
 
     final int contextId = _view.contextId;
