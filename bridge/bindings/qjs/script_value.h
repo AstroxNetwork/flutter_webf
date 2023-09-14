@@ -36,15 +36,19 @@ class ScriptValue final {
 
   // Create an empty ScriptValue;
   static ScriptValue Empty(JSContext* ctx);
+  // Create an undefined ScriptValue;
+  static ScriptValue Undefined(JSContext* ctx);
   // Wrap an Quickjs JSValue to ScriptValue.
   explicit ScriptValue(JSContext* ctx, JSValue value)
       : ctx_(ctx), value_(JS_DupValue(ctx, value)), runtime_(JS_GetRuntime(ctx)){};
+  explicit ScriptValue(JSContext* ctx, const AtomicString& value)
+      : ctx_(ctx), value_(JS_AtomToString(ctx, value.Impl())), runtime_(JS_GetRuntime(ctx)){};
   explicit ScriptValue(JSContext* ctx, const SharedNativeString* string)
       : ctx_(ctx), value_(JS_NewUnicodeString(ctx, string->string(), string->length())), runtime_(JS_GetRuntime(ctx)) {}
   explicit ScriptValue(JSContext* ctx, double v)
       : ctx_(ctx), value_(JS_NewFloat64(ctx, v)), runtime_(JS_GetRuntime(ctx)) {}
   explicit ScriptValue(JSContext* ctx) : ctx_(ctx), runtime_(JS_GetRuntime(ctx)){};
-  explicit ScriptValue(JSContext* ctx, const NativeValue& native_value);
+  explicit ScriptValue(JSContext* ctx, const NativeValue& native_value, bool shared_js_value = false);
   ScriptValue() = default;
 
   // Copy and assignment
@@ -61,6 +65,7 @@ class ScriptValue final {
   // Create a new ScriptValue from call JSON.stringify to current value.
   ScriptValue ToJSONStringify(ExceptionState* exception) const;
   AtomicString ToString() const;
+  AtomicString ToLegacyDOMString() const;
   std::unique_ptr<SharedNativeString> ToNativeString() const;
   NativeValue ToNative(ExceptionState& exception_state, bool shared_js_value = false) const;
 

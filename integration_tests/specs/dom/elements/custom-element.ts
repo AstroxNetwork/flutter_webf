@@ -410,6 +410,21 @@ describe('custom widget element', () => {
     await sleep(0.1);
     await snapshot();
   });
+
+  it('should works with swiper component', async () => {
+    const swiper = document.createElement('flutter-swiper');
+    for(let i = 0; i < 10; i ++) {
+      const container = document.createElement('div');
+      container.textContent = i.toString();
+      swiper.appendChild(container);
+    }
+    document.body.appendChild(swiper);
+    await snapshot();
+    // @ts-ignore
+    swiper.move(1);
+    await sleep(1);
+    await snapshot();
+  });
 });
 
 describe('custom html element', () => {
@@ -515,7 +530,7 @@ describe('custom html element', () => {
     document.body.appendChild(sampleElement);
 
     // @ts-ignore
-    expect(sampleElement._fake).toBe(null);
+    expect(sampleElement._fake).toBe(undefined);
 
     // @ts-ignore
     sampleElement._fake = [1, 2, 3, 4, 5];
@@ -538,7 +553,7 @@ describe('custom html element', () => {
     document.body.appendChild(sampleElement);
 
     // @ts-ignore
-    expect(sampleElement._fake).toBe(null);
+    expect(sampleElement._fake).toBe(undefined);
 
     // @ts-ignore
     sampleElement._fake = [1, 2, 3, 4, 5];

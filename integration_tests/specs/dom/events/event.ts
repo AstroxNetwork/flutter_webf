@@ -541,6 +541,78 @@ describe('Event', () => {
     expect(ret).toEqual('1');
   });
 
+  it('ResizeObserver observer one element', async (done)=> {
+    const el = createElement('div', {
+      style: {
+        width: '100px',
+        height: '100px',
+        background: 'red'
+      }
+    });
+    document.body.appendChild(el);
+    const observer = new ResizeObserver((entries)=>{
+      if(entries) {
+        done();
+      }
+    });
+    observer.observe(el);
+    el.style.width = '102px';
+  });
+
+  it('ResizeObserver observer one element and update twice', async (done)=> {
+      const el = createElement('div', {
+        style: {
+          width: '100px',
+          height: '100px',
+          background: 'red'
+        }
+      });
+      document.body.appendChild(el);
+      const observer = new ResizeObserver((entries)=>{
+        if(entries && entries.length > 0 && entries[entries.length-1].contentRect.width == 103) {
+          done();
+          return;
+        }
+        done.fail('ResizeObserver size get not right，'+ entries[entries.length-1].contentRect.width);
+      });
+      observer.observe(el);
+      el.style.width = '102px';
+      el.style.width = '103px';
+    });
+
+  it('ResizeObserver observer two element', async (done)=> {
+    const el = createElement('div', {
+      style: {
+        width: '100px',
+        height: '100px',
+        background: 'red'
+      }
+    });
+    const el2 = createElement('div', {
+      style: {
+        width: '100px',
+        height: '100px',
+        background: 'yellow'
+      }
+    });
+    document.body.appendChild(el);
+    document.body.appendChild(el2);
+    const observer = new ResizeObserver((entries)=>{
+      if(entries && entries.length > 1) {
+        done();
+        return;
+      }
+      done.fail('ResizeObserver entries not ture');
+    });
+    observer.observe(el);
+    observer.observe(el2);
+    el.style.width = '102px';
+    el2.style.width = '102px';
+  });
+
+
+
+
   it('should work with share event object', async () => {
     const container1 = document.createElement('div');
     document.body.appendChild(container1);
@@ -580,6 +652,19 @@ describe('Event', () => {
 
     container2.click();
     await snapshot();
+  });
+
+  it('shared string props should works', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    container.addEventListener('click', (e) => {
+      e['_type'] = '1234';
+      expect(e['_type']).toBe('1234');
+      expect(e['_type']).toBe('1234');
+      expect(e['_type']).toBe('1234');
+      expect(e['_type']).toBe('1234');
+    });
+    container.click();
   });
 
   it('should work with share event callback', async () => {
@@ -622,5 +707,74 @@ describe('Event', () => {
 
     container2.click();
     await snapshot();
+  });
+
+  it('should works when override built-in properties', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    Object.assign(container.style, {
+      padding: '20px',
+      backgroundColor: '#999',
+      margin: '40px',
+    });
+    container.appendChild(document.createTextNode('DIV 1'));
+
+    container.addEventListener('click', (e) => {
+      e.preventDefault = () => 'PREVENTED';
+    });
+
+    document.body.addEventListener('click', (e) => {
+      // @ts-ignore
+      document.body.appendChild(document.createTextNode(e.preventDefault()));
+    });
+
+    document.body.appendChild(container);
+
+    container.click();
+    await snapshot();
+  });
+  it('ResizeObserver observer one element', async (done)=> {
+    const el = createElement('div', {
+      style: {
+        width: '100px',
+        height: '100px',
+        background: 'red'
+      }
+    });
+    document.body.appendChild(el);
+    const observer = new ResizeObserver((entries)=>{
+      if(entries) {
+        done();
+      }
+    });
+    observer.observe(el);
+    el.style.width = '102px';
+  });
+  it('ResizeObserver observer two element', async (done)=> {
+    const el = createElement('div', {
+      style: {
+        width: '100px',
+        height: '100px',
+        background: 'red'
+      }
+    });
+    const el2 = createElement('div', {
+      style: {
+        width: '100px',
+        height: '100px',
+        background: 'yellow'
+      }
+    });
+    document.body.appendChild(el);
+    document.body.appendChild(el2);
+    const observer = new ResizeObserver((entries)=>{
+      if(entries && entries.length > 1) {
+        done();
+      }
+    });
+    observer.observe(el);
+    observer.observe(el2);
+    el.style.width = '102px';
+    el2.style.width = '102px';
   });
 });

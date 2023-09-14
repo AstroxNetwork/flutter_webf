@@ -33,6 +33,7 @@ dependencies:
       path: packages/webf_websocket/
   waterfall_flow: ^3.0.1
   image_compare: ^1.1.2
+  card_swiper: ^3.0.1
 
 dev_dependencies:
   flutter_test:

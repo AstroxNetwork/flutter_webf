@@ -110,7 +110,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
   String? get id => _id;
 
   set id(String? id) {
-    final isNeedRecalculate = _checkRecalculateStyle([id, _id], ownerDocument.ruleSet.idRules);
+    final isNeedRecalculate = _checkRecalculateStyle([id, _id]);
     _updateIDMap(id, oldID: _id);
     _id = id;
     recalculateStyle(rebuildNested: isNeedRecalculate);
@@ -124,6 +124,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
 
   // Holding reference if this element are managed by Flutter framework.
   WebFHTMLElementStatefulWidget? flutterWidget_;
+  WebFHTMLElementToFlutterElementAdaptor? flutterWidgetElement;
 
   @override
   WebFHTMLElementStatefulWidget? get flutterWidget => flutterWidget_;
@@ -156,7 +157,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
   set className(String className) {
     List<String> classList = className.split(classNameSplitRegExp);
     final checkKeys = (_classList + classList).where((key) => !_classList.contains(key) || !classList.contains(key));
-    final isNeedRecalculate = _checkRecalculateStyle(List.from(checkKeys), ownerDocument.ruleSet.classRules);
+    final isNeedRecalculate = _checkRecalculateStyle(List.from(checkKeys));
     _classList.clear();
     if (classList.isNotEmpty) {
       _classList.addAll(classList);
@@ -947,6 +948,8 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
     attributes.clear();
     disposeScrollable();
     _attributeProperties.clear();
+    flutterWidget = null;
+    flutterWidgetElement = null;
     super.dispose();
   }
 
@@ -1268,7 +1271,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
     if (propertyHandler != null && propertyHandler.setter != null) {
       propertyHandler.setter!(value);
     }
-    final isNeedRecalculate = _checkRecalculateStyle([qualifiedName], ownerDocument.ruleSet.attributeRules);
+    final isNeedRecalculate = _checkRecalculateStyle([qualifiedName]);
     _needRecalculateStyle = _needRecalculateStyle || isNeedRecalculate;
   }
 
@@ -1278,7 +1281,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
       className = value;
       return;
     }
-    final isNeedRecalculate = _checkRecalculateStyle([qualifiedName], ownerDocument.ruleSet.attributeRules);
+    final isNeedRecalculate = _checkRecalculateStyle([qualifiedName]);
     recalculateStyle(rebuildNested: isNeedRecalculate);
   }
 
@@ -1842,7 +1845,7 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
   }
 
   void clearInlineStyle() {
-    for(var key in inlineStyle.keys) {
+    for (var key in inlineStyle.keys) {
       style.removeProperty(key, true);
     }
     inlineStyle.clear();
@@ -2084,37 +2087,14 @@ abstract class Element extends ContainerNode with ElementBase, ElementEventMixin
     return scrollingContentLayoutBox;
   }
 
-  bool _checkRecalculateStyle(List<String?> keys, CSSMap cssMap) {
+  bool _checkRecalculateStyle(List<String?> keys) {
     if (keys.isEmpty) {
       return false;
     }
-    for (final rules in cssMap.values) {
-      for (int i = 0; i < rules.length; i++) {
-        var rule = rules[i];
-        if (rule is! CSSStyleRule) {
-          continue;
-        }
-        for (Selector selector in rule.selectorGroup.selectors) {
-          if (selector.simpleSelectorSequences.any((element) => keys.contains(element.simpleSelector.name))) {
-            return true;
-          }
-        }
-      }
+    if (keys.isEmpty) {
+      return false;
     }
-
-    for (int i = 0; i < ownerDocument.ruleSet.pseudoRules.length; i++) {
-      var rule = ownerDocument.ruleSet.pseudoRules[i];
-      if (rule is! CSSStyleRule) {
-        continue;
-      }
-      for (Selector selector in rule.selectorGroup.selectors) {
-        if (selector.simpleSelectorSequences.any((element) => keys.contains(element.simpleSelector.name))) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return keys.any((element) => selectorKeySet.contains(element));
   }
 
   RenderStyle? computedStyle(String? pseudoElementSpecifier) {

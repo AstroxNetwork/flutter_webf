@@ -141,7 +141,7 @@ bool Event::NamedPropertyQuery(const AtomicString& key, ExceptionState& exceptio
 
 ScriptValue Event::item(const AtomicString& key, ExceptionState& exception_state) {
   if (raw_event_ == nullptr)
-    return ScriptValue::Empty(ctx());
+    return ScriptValue::Undefined(ctx());
 
 #if ANDROID_32_BIT
   auto* raw_event_props = reinterpret_cast<EventProp*>(raw_event_->props);
@@ -152,12 +152,12 @@ ScriptValue Event::item(const AtomicString& key, ExceptionState& exception_state
   if (raw_event_props != nullptr) {
     for (int i = 0; i < raw_event_->props_len; i++) {
       if (key.Impl() == raw_event_props[i].key_atom) {
-        return ScriptValue(ctx(), raw_event_props[i].value);
+        return ScriptValue(ctx(), raw_event_props[i].value, true);
       }
     }
   }
 
-  return ScriptValue::Empty(ctx());
+  return ScriptValue::Undefined(ctx());
 }
 
 void set_event_prop(EventProp* prop,
