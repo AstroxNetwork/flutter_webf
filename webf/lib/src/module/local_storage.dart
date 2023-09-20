@@ -10,6 +10,8 @@ import 'package:webf/foundation.dart';
 import 'package:webf/module.dart';
 
 class LocalStorageModule extends BaseModule {
+  static bool shouldInitializeHive = true;
+
   @override
   String get name => 'LocalStorage';
 
@@ -21,14 +23,17 @@ class LocalStorageModule extends BaseModule {
 
   @override
   Future<void> initialize() async {
-    String tmpPath = await getWebFTemporaryPath();
-    Hive.init(path.join(tmpPath, 'LocalStorage'));
-    String key = getBoxKey(moduleManager!);
+    final tmpPath = await getWebFTemporaryPath();
+    final storagePath = path.join(tmpPath, 'LocalStorage');
+    if (shouldInitializeHive) {
+      Hive.init(storagePath);
+    }
+    final key = getBoxKey(moduleManager!);
     try {
-      await Hive.openBox(key);
+      await Hive.openBox(key, path: storagePath);
     } catch (e) {
-      // Try twice to avoid Resource temporarily unavailable.
-      await Hive.openBox(key);
+      // Try again to avoid resources are temporarily unavailable.
+      await Hive.openBox(key, path: storagePath);
     }
   }
 
