@@ -66,6 +66,7 @@ Podfile.lock
 
 temp
 coverage
+pubspec_overrides.yaml
 pubspec.lock
 .fvm
 pnpm-lock.yaml
