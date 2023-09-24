@@ -3,7 +3,9 @@
  */
 
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -273,18 +275,56 @@ mixin BaseInputElement on WidgetElement {
       ? (lineHeight - fontSize - _defaultPadding * 2) / fontSize
       : 0;
 
-  TextStyle get _textStyle => TextStyle(
-        color: renderStyle.color.value,
-        fontSize: fontSize,
-        fontWeight: renderStyle.fontWeight,
-        fontFamily: renderStyle.fontFamily?.join(' '),
-      );
+  TextStyle get _textStyle {
+    final fontFamilies = renderStyle.fontFamily;
+    final hasFontFamilyCallback = fontFamilies != null && fontFamilies.length > 1;
+    return TextStyle(
+      color: renderStyle.color.value,
+      fontSize: fontSize,
+      fontWeight: renderStyle.fontWeight,
+      fontFamily: fontFamilies?.firstOrNull,
+      fontFamilyFallback: hasFontFamilyCallback ? fontFamilies.sublist(1) : null,
+    );
+  }
 
   StrutStyle get _textStruct => StrutStyle(
     leading: leading,
   );
 
   final double _defaultPadding = 0;
+
+  InputBorder get _inputBorder {
+    final borderSides = renderStyle.borderSides;
+    if (borderSides.every((e) => e == CSSBorderSide.none)) {
+      return InputBorder.none;
+    } else if (borderSides.every((e) => e != CSSBorderSide.none)) {
+      final side = borderSides.last;
+      final radius = renderStyle.borderRadius;
+      final padding = renderStyle.border;
+      return OutlineInputBorder(
+        borderSide: side,
+        borderRadius: BorderRadius.only(
+          topLeft: radius[0],
+          topRight: radius[1],
+          bottomRight: radius[2],
+          bottomLeft: radius[3],
+        ),
+        gapPadding: math.max(math.max(math.max(padding.left, padding.right), padding.top), padding.bottom),
+      );
+    } else {
+      final side = borderSides.firstWhere((e) => e != CSSBorderSide.none);
+      final radius = renderStyle.borderRadius;
+      return UnderlineInputBorder(
+        borderSide: side,
+        borderRadius: BorderRadius.only(
+          topLeft: radius[0],
+          topRight: radius[1],
+          bottomRight: radius[2],
+          bottomLeft: radius[3],
+        ),
+      );
+    }
+  }
 
   Widget _createInputWidget(BuildContext context) {
     FlutterFormElementContext? formContext = context.dependOnInheritedWidgetOfExactType<FlutterFormElementContext>();
@@ -298,7 +338,7 @@ mixin BaseInputElement on WidgetElement {
 
     InputDecoration decoration = InputDecoration(
         label: label != null ? Text(label!) : null,
-        border: InputBorder.none,
+        border: _inputBorder,
         isDense: true,
         isCollapsed: true,
         contentPadding: EdgeInsets.fromLTRB(0, _defaultPadding, 0, _defaultPadding),

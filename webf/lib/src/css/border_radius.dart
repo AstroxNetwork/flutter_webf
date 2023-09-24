@@ -48,19 +48,12 @@ mixin CSSBorderRadiusMixin on RenderStyle {
   CSSBorderRadius get borderBottomLeftRadius => _borderBottomLeftRadius ?? CSSBorderRadius.zero;
 
   @override
-  List<Radius>? get borderRadius {
-    bool hasBorderRadius = borderTopLeftRadius != CSSBorderRadius.zero ||
-        borderTopRightRadius != CSSBorderRadius.zero ||
-        borderBottomRightRadius != CSSBorderRadius.zero ||
-        borderBottomLeftRadius != CSSBorderRadius.zero;
-
-    return hasBorderRadius
-        ? [
-            borderTopLeftRadius.computedRadius,
-            borderTopRightRadius.computedRadius,
-            borderBottomRightRadius.computedRadius,
-            borderBottomLeftRadius.computedRadius
-          ]
-        : null;
+  List<Radius> get borderRadius {
+    return [
+      borderTopLeftRadius.computedRadius,
+      borderTopRightRadius.computedRadius,
+      borderBottomRightRadius.computedRadius,
+      borderBottomLeftRadius.computedRadius
+    ];
   }
 }

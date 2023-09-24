@@ -90,22 +90,18 @@ mixin CSSBorderMixin on RenderStyle {
   }
 
   @override
-  List<BorderSide>? get borderSides {
+  List<BorderSide> get borderSides {
     BorderSide? leftSide = CSSBorderSide._getBorderSide(this, CSSBorderSide.LEFT);
     BorderSide? topSide = CSSBorderSide._getBorderSide(this, CSSBorderSide.TOP);
     BorderSide? rightSide = CSSBorderSide._getBorderSide(this, CSSBorderSide.RIGHT);
     BorderSide? bottomSide = CSSBorderSide._getBorderSide(this, CSSBorderSide.BOTTOM);
 
-    bool hasBorder = leftSide != null || topSide != null || rightSide != null || bottomSide != null;
-
-    return hasBorder
-        ? [
-            leftSide ?? CSSBorderSide.none,
-            topSide ?? CSSBorderSide.none,
-            rightSide ?? CSSBorderSide.none,
-            bottomSide ?? CSSBorderSide.none
-          ]
-        : null;
+    return [
+      leftSide ?? CSSBorderSide.none,
+      topSide ?? CSSBorderSide.none,
+      rightSide ?? CSSBorderSide.none,
+      bottomSide ?? CSSBorderSide.none
+    ];
   }
 
   /// Shorted border property:
