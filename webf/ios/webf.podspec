@@ -1,6 +1,18 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 #
+`
+for FRAMEWORK in \
+  "quickjs.xcframework" \
+  "webf_bridge.xcframework" ; do
+  if [ -L $FRAMEWORK ]; then
+    echo "Recreating ${FRAMEWORK} link..."
+    rm $FRAMEWORK
+    ln -s "../../../bridge/build/ios/framework/${FRAMEWORK}" $FRAMEWORK
+  fi
+done
+`
+
 Pod::Spec.new do |s|
   s.name             = 'webf'
   s.version          = '0.14.0'
@@ -16,10 +28,8 @@ Pod::Spec.new do |s|
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.platform = :ios, '11.0'
-  s.prepare_command = 'bash prepare.sh'
   s.vendored_frameworks = 'Frameworks/*.xcframework'
   s.resource = 'Frameworks/*.*'
-
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end
