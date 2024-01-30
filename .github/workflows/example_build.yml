@@ -9,8 +9,8 @@ on:
 
 env:
   nodeVersion: '18'
-  cmakeVersion: '3.26.3'
-  flutterVersion: '3.10.5'
+  cmakeVersion: "3.26.3"
+  flutterVersion: "3.13.5"
 
 jobs:
   build_windows-app_in_windows:

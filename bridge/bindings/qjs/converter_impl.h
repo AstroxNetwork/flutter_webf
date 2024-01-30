@@ -237,6 +237,10 @@ struct Converter<IDLOptional<IDLDOMString>> : public ConverterBase<IDLDOMString>
   }
   static JSValue ToValue(JSContext* ctx, const std::string& str) { return Converter<IDLDOMString>::ToValue(ctx, str); }
   static JSValue ToValue(JSContext* ctx, typename Converter<IDLDOMString>::ImplType value) {
+    if (value == AtomicString::Null()) {
+      return JS_UNDEFINED;
+    }
+
     return Converter<IDLDOMString>::ToValue(ctx, std::move(value));
   }
 };
@@ -250,7 +254,12 @@ struct Converter<IDLNullable<IDLDOMString>> : public ConverterBase<IDLDOMString>
   }
 
   static JSValue ToValue(JSContext* ctx, const std::string& value) { return AtomicString(ctx, value).ToQuickJS(ctx); }
-  static JSValue ToValue(JSContext* ctx, const AtomicString& value) { return value.ToQuickJS(ctx); }
+  static JSValue ToValue(JSContext* ctx, const AtomicString& value) {
+    if (value == AtomicString::Null()) {
+      return JS_NULL;
+    }
+    return value.ToQuickJS(ctx);
+  }
 };
 
 template <>
@@ -347,6 +356,8 @@ struct Converter<IDLOptional<IDLSequence<T>>> : public ConverterBase<IDLSequence
 
     return Converter<IDLSequence<T>>::FromValue(ctx, value, exception_state);
   }
+
+  static JSValue ToValue(JSContext* ctx, ImplType value) { return Converter<IDLSequence<T>>::ToValue(ctx, value); }
 };
 
 template <typename T>
@@ -381,7 +392,12 @@ struct Converter<BlobPart> : public ConverterBase<BlobPart> {
     return BlobPart::Create(ctx, value, exception_state);
   }
 
-  static JSValue ToValue(JSContext* ctx, BlobPart* data) { return data->ToQuickJS(ctx); }
+  static JSValue ToValue(JSContext* ctx, BlobPart* data) {
+    if (data == nullptr)
+      return JS_NULL;
+
+    return data->ToQuickJS(ctx);
+  }
 };
 
 template <>
@@ -460,7 +476,12 @@ struct Converter<T, typename std::enable_if_t<std::is_base_of<DictionaryBase, T>
     return T::Create(ctx, value, exception_state);
   }
 
-  static JSValue ToValue(JSContext* ctx, typename T::ImplType value) { return value->toQuickJS(ctx); }
+  static JSValue ToValue(JSContext* ctx, typename T::ImplType value) {
+    if (value == nullptr)
+      return JS_NULL;
+
+    return value->toQuickJS(ctx);
+  }
 };
 
 template <typename T>
@@ -534,8 +555,16 @@ struct Converter<T, typename std::enable_if_t<std::is_base_of<ScriptWrappable, T
                                    ExceptionMessage::ArgumentNotOfType(argv_index, wrapper_type_info->className));
     return nullptr;
   }
-  static JSValue ToValue(JSContext* ctx, T* value) { return value->ToQuickJS(); }
-  static JSValue ToValue(JSContext* ctx, const T* value) { return value->ToQuickJS(); }
+  static JSValue ToValue(JSContext* ctx, T* value) {
+    if (value == nullptr)
+      return JS_NULL;
+    return value->ToQuickJS();
+  }
+  static JSValue ToValue(JSContext* ctx, const T* value) {
+    if (value == nullptr)
+      return JS_NULL;
+    return value->ToQuickJS();
+  }
 };
 
 template <typename T>

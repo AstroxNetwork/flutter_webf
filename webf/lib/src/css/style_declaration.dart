@@ -75,7 +75,7 @@ class CSSPropertyValue {
 ///    object on the first CSS rule in the document's first stylesheet.
 /// 3. Via [Window.getComputedStyle()], which exposes the [CSSStyleDeclaration]
 ///    object as a read-only interface.
-class CSSStyleDeclaration extends BindingObject {
+class CSSStyleDeclaration extends DynamicBindingObject {
   Element? target;
 
   // TODO(yuanyan): defaultStyle should be longhand properties.
@@ -97,7 +97,7 @@ class CSSStyleDeclaration extends BindingObject {
     target?.markAfterPseudoElementNeedsUpdate();
   }
 
-  CSSStyleDeclaration([BindingContext? context]);
+  CSSStyleDeclaration([BindingContext? context]): super(context);
 
   // ignore: prefer_initializing_formals
   CSSStyleDeclaration.computedStyle(this.target, this.defaultStyle, this.onStyleChanged, [this.onStyleFlushed]);

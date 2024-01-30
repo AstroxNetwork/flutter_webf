@@ -135,10 +135,10 @@ abstract class CanvasImageData {
 }
 
 // ignore: one_member_abstracts
-class CanvasGradient extends BindingObject {
-  CanvasGradient(this.ownerCanvasElement)
-      : _pointer = allocateNewBindingObject(),
-        super();
+class CanvasGradient extends DynamicBindingObject {
+  CanvasGradient(BindingContext context, this.ownerCanvasElement)
+      : _pointer = context.pointer,
+        super(context);
 
   final ffi.Pointer<NativeBindingObject> _pointer;
   final CanvasElement ownerCanvasElement;
@@ -167,12 +167,12 @@ class CanvasGradient extends BindingObject {
 }
 
 // ignore: one_member_abstracts
-class CanvasPattern extends BindingObject {
-  CanvasPattern(CanvasImageSource image, String repetition)
-      : _pointer = allocateNewBindingObject(),
+class CanvasPattern extends DynamicBindingObject {
+  CanvasPattern(BindingContext context, CanvasImageSource image, String repetition)
+      : _pointer = context.pointer,
         _image = image,
         _repetition = repetition,
-        super();
+        super(context);
 
   final ffi.Pointer<NativeBindingObject> _pointer;
 
@@ -212,7 +212,7 @@ class CanvasLinearGradient extends CanvasGradient {
   double x1;
   double y1;
 
-  CanvasLinearGradient(super.ownerCanvasElement, this.x0, this.y0, this.x1, this.y1);
+  CanvasLinearGradient(super.context, super.ownerCanvasElement, this.x0, this.y0, this.x1, this.y1);
 }
 
 class CanvasRadialGradient extends CanvasGradient {
@@ -223,5 +223,5 @@ class CanvasRadialGradient extends CanvasGradient {
   double y1;
   double r1;
 
-  CanvasRadialGradient(super.ownerCanvasElement, this.x0, this.y0, this.r0, this.x1, this.y1, this.r1);
+  CanvasRadialGradient(super.context, super.ownerCanvasElement, this.x0, this.y0, this.r0, this.x1, this.y1, this.r1);
 }

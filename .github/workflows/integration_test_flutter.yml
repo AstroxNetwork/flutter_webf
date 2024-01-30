@@ -4,8 +4,8 @@ on: [workflow_dispatch, pull_request]
 
 env:
   nodeVersion: '18'
-  cmakeVersion: '3.22.x'
-  flutter310: '3.10.5'
+  cmakeVersion: "3.22.x"
+  flutter: "3.13.5"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -24,145 +24,142 @@ jobs:
   build_bridge:
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.nodeVersion }}
-      - uses: jwlawson/actions-setup-cmake@v1.11
-        with:
-          cmake-version: ${{ env.cmakeVersion }}
-      - run: npm i -g pnpm
-      - run: pnpm install
-      - run: pnpm run build:bridge:macos
-      - uses: actions/upload-artifact@v2
-        with:
-          name: macos_bridge_binary
-          path: bridge/build/macos/
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.nodeVersion }}
+    - uses: jwlawson/actions-setup-cmake@v1.11
+      with:
+        cmake-version: ${{ env.cmakeVersion }}
+    - run: npm i -g pnpm
+    - run: pnpm install
+    - run: pnpm run build:bridge:macos
+    - uses: actions/upload-artifact@v2
+      with:
+        name: macos_bridge_binary
+        path: bridge/build/macos/
 
   bridge_unit_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.nodeVersion }}
-      - uses: jwlawson/actions-setup-cmake@v1.11
-        with:
-          cmake-version: ${{ env.cmakeVersion }}
-      - run: |
-          sudo apt-get update
-          sudo apt-get install chrpath ninja-build pkg-config -y
-      - run: npm i -g pnpm
-      - run: pnpm install
-      - run: ENABLE_ASAN=true pnpm run build:bridge:linux
-      - run: node scripts/run_bridge_unit_test.js
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.nodeVersion }}
+    - uses: jwlawson/actions-setup-cmake@v1.11
+      with:
+        cmake-version: ${{ env.cmakeVersion }}
+    - run: |
+        sudo apt-get update
+        sudo apt-get install chrpath ninja-build pkg-config -y
+    - run: npm i -g pnpm
+    - run: pnpm install
+    - run: ENABLE_ASAN=true pnpm run build:bridge:linux
+    - run: node scripts/run_bridge_unit_test.js
 
-  webf_unit_test_310:
+  webf_unit_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.flutter310 }}
-      - run: flutter config --enable-macos-desktop
-      - run: flutter doctor -v
-      - run: cd webf && flutter test
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.flutter }}
+    - run: flutter config --enable-macos-desktop
+    - run: flutter doctor -v
+    - run: cd webf && flutter test
 
-  integration_test_f310:
+  integration_test:
     runs-on: self-hosted
-    needs: [setup, build_bridge]
+    needs: [ setup, build_bridge ]
     strategy:
       fail-fast: false
       matrix:
         value: ${{fromJson(needs.setup.outputs.matrix)}}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.nodeVersion }}
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.flutter310 }}
-      - run: flutter config --enable-macos-desktop
-      - run: flutter doctor -v
-      - uses: actions/download-artifact@v2
-        with:
-          name: macos_bridge_binary
-          path: bridge/build/macos/
-      - run: cd integration_tests && npm i -g pnpm && pnpm install
-      - name: Run Test
-        run: cd integration_tests && CI=true SPEC_SCOPE="${{ matrix.value }}" npm run integration
-        id: test
-        continue-on-error: true
-      - uses: actions/upload-artifact@v2
-        if: steps.test.outcome != 'success'
-        with:
-          name: integration_${{ matrix.value }}_snapshots
-          path: integration_tests/snapshots
-      - name: Check on failures
-        if: steps.test.outcome != 'success'
-        run: exit 1
-  plugin_test:
-    runs-on: self-hosted
-    needs: [build_bridge]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.nodeVersion }}
-      - uses: actions/download-artifact@v2
-        with:
-          name: macos_bridge_binary
-          path: bridge/build/macos/
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.flutter310 }}
-      - run: flutter config --enable-macos-desktop
-      - run: flutter doctor -v
-      - name: Run Plugin Test
-        run: cd integration_tests && pnpm run plugin_test
-        id: test
-        continue-on-error: true
-      - uses: actions/upload-artifact@v2
-        with:
-          name: plugin_snapshots
-          path: integration_tests/snapshots/plugins
-      - name: Check on failures
-        if: steps.test.outcome != 'success'
-        run: exit 1
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.nodeVersion }}
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.flutter310 }}
+    - run: flutter config --enable-macos-desktop
+    - run: flutter doctor -v
+    - uses: actions/download-artifact@v2
+      with:
+        name: macos_bridge_binary
+        path: bridge/build/macos/
+    - run: cd integration_tests && npm i -g pnpm && pnpm install
+    - name: Run Test
+      run: cd integration_tests && CI=true SPEC_SCOPE="${{ matrix.value }}" npm run integration
+      id: test
+      continue-on-error: true
+    - uses: actions/upload-artifact@v2
+      if: steps.test.outcome != 'success'
+      with:
+        name: integration_${{ matrix.value }}_snapshots
+        path: integration_tests/snapshots
+    - name: Check on failures
+      if: steps.test.outcome != 'success'
+      run: exit 1
   multiple_page_test:
     runs-on: self-hosted
-    needs: [build_bridge]
+    needs: [ build_bridge ]
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ env.nodeVersion }}
-      - uses: actions/download-artifact@v2
-        with:
-          name: macos_bridge_binary
-          path: bridge/build/macos/
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.flutter310 }}
-      - run: flutter config --enable-macos-desktop
-      - run: flutter doctor -v
-      - name: Run MultiplePageTest Test
-        run: cd integration_tests && pnpm run multiple_page_test
-        id: test
-        continue-on-error: true
-      - name: Check on failures
-        if: steps.test.outcome != 'success'
-        run: exit 1
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.nodeVersion }}
+    - uses: actions/download-artifact@v2
+      with:
+        name: macos_bridge_binary
+        path: bridge/build/macos/
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.flutter310 }}
+    - run: flutter config --enable-macos-desktop
+    - run: flutter doctor -v
+    - name: Run MultiplePageTest Test
+      run: cd integration_tests && npm install -g pnpm && pnpm run multiple_page_test
+      id: test
+      continue-on-error: true
+    - name: Check on failures
+      if: steps.test.outcome != 'success'
+      run: exit 1
+
+  memory_leak_test:
+    runs-on: self-hosted
+    needs: [ build_bridge ]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.nodeVersion }}
+    - uses: actions/download-artifact@v2
+      with:
+        name: macos_bridge_binary
+        path: bridge/build/macos/
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.flutter310 }}
+    - run: flutter config --enable-macos-desktop
+    - run: flutter doctor -v
+    - name: Run MemoryLeak Test
+      run: cd integration_tests && npm install -g pnpm && pnpm run memory_leak_integration
+      id: test
+      continue-on-error: true
+    - name: Check on failures
+      if: steps.test.outcome != 'success'
+      run: exit 1

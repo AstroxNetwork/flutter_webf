@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:webf/foundation.dart';
-import 'package:webf/launcher.dart';
 import 'package:webf/module.dart';
 
 const String DEFAULT_URL = 'about:blank';
@@ -81,7 +80,7 @@ void _failedToResolveBundle(String url) {
 }
 
 abstract class WebFBundle {
-  WebFBundle(this.url);
+  WebFBundle(this.url, { ContentType? contentType }): _contentType = contentType;
 
   // Unique resource locator.
   final String url;
@@ -97,25 +96,27 @@ abstract class WebFBundle {
   Uint8List? data;
 
   // Indicate the bundle is resolved.
-  bool get isResolved => _uri != null && data != null;
+  bool get isResolved => _uri != null;
 
   // Content type for data.
   // The default value is plain text.
-  ContentType contentType = ContentType.text;
+  ContentType get contentType => _contentType ?? ContentType.text;
+  ContentType? _contentType;
 
   @mustCallSuper
-  Future<void> resolve(int? contextId) async {
+  Future<void> resolve({ String? baseUrl, UriParser? uriParser }) async {
     if (isResolved) return;
 
     // Source is input by user, do not trust it's a valid URL.
     _uri = Uri.tryParse(url);
-    if (contextId != null && _uri != null) {
-      WebFController? controller = WebFController.getControllerOfJSContextId(contextId);
-      if (controller != null) {
-        _uri = controller.uriParser!.resolve(Uri.parse(controller.url), _uri!);
-      }
+
+    if (baseUrl != null && _uri != null) {
+      uriParser ??= UriParser();
+      _uri = uriParser.resolve(Uri.parse(baseUrl), _uri!);
     }
   }
+
+  Future<void> obtainData();
 
   // Dispose the memory obtained by bundle.
   @mustCallSuper
@@ -132,15 +133,15 @@ abstract class WebFBundle {
     await cacheObject.remove();
   }
 
-  static WebFBundle fromUrl(String url, {Map<String, String>? additionalHttpHeaders}) {
+  static WebFBundle fromUrl(String url, {Map<String, String>? additionalHttpHeaders, ContentType? contentType}) {
     if (_isHttpScheme(url)) {
-      return NetworkBundle(url, additionalHttpHeaders: additionalHttpHeaders);
+      return NetworkBundle(url, additionalHttpHeaders: additionalHttpHeaders, contentType: contentType);
     } else if (_isAssetsScheme(url)) {
-      return AssetsBundle(url);
+      return AssetsBundle(url, contentType: contentType);
     } else if (_isFileScheme(url)) {
-      return FileBundle(url);
+      return FileBundle(url, contentType: contentType);
     } else if (_isDataScheme(url)) {
-      return DataBundle.fromDataUrl(url);
+      return DataBundle.fromDataUrl(url, contentType: contentType);
     } else if (_isDefaultUrl(url)) {
       return DataBundle.fromString('', url, contentType: javascriptContentType);
     } else {
@@ -169,20 +170,23 @@ abstract class WebFBundle {
 class DataBundle extends WebFBundle {
   DataBundle(Uint8List data, String url, {ContentType? contentType}) : super(url) {
     this.data = data;
-    this.contentType = contentType ?? ContentType.binary;
+    _contentType = contentType ?? ContentType.binary;
   }
 
   DataBundle.fromString(String content, String url, {ContentType? contentType}) : super(url) {
     // Encode string to data by utf8.
     data = Uint8List.fromList(utf8.encode(content));
-    this.contentType = contentType ?? ContentType.text;
+    _contentType = contentType ?? ContentType.text;
   }
 
   DataBundle.fromDataUrl(String dataUrl, {ContentType? contentType}) : super(dataUrl) {
     UriData uriData = UriData.parse(dataUrl);
     data = uriData.contentAsBytes();
-    this.contentType = contentType ?? ContentType.parse('${uriData.mimeType}; charset=${uriData.charset}');
+    _contentType = contentType ?? ContentType.parse('${uriData.mimeType}; charset=${uriData.charset}');
   }
+
+  @override
+  Future<void> obtainData() async {}
 }
 
 // The bundle that source from http or https.
@@ -191,21 +195,19 @@ class NetworkBundle extends WebFBundle {
   static final HttpClient _sharedHttpClient = HttpClient()
     ..userAgent = NavigatorModule.getUserAgent();
 
-  NetworkBundle(String url, {this.additionalHttpHeaders}) : super(url);
+  NetworkBundle(String url, {this.additionalHttpHeaders, ContentType? contentType}) : super(url, contentType: contentType);
 
   Map<String, String>? additionalHttpHeaders = {};
 
   @override
-  Future<void> resolve(int? contextId) async {
-    super.resolve(contextId);
+  Future<void> obtainData() async {
+    if (data != null) return;
+
     final HttpClientRequest request = await _sharedHttpClient.getUrl(_uri!);
 
     // Prepare request headers.
     request.headers.set('Accept', _acceptHeader());
     additionalHttpHeaders?.forEach(request.headers.set);
-    if (contextId != null) {
-      WebFHttpOverrides.setContextHeader(request.headers, contextId);
-    }
 
     final HttpClientResponse response = await request.close();
     if (response.statusCode != HttpStatus.ok)
@@ -227,16 +229,17 @@ class NetworkBundle extends WebFBundle {
     }
 
     data = bytes.buffer.asUint8List();
-    contentType = response.headers.contentType ?? ContentType.binary;
+    _contentType = response.headers.contentType ?? ContentType.binary;
   }
 }
 
 class AssetsBundle extends WebFBundle with _ExtensionContentTypeResolver {
-  AssetsBundle(String url) : super(url);
+  AssetsBundle(String url, { ContentType? contentType }) : super(url, contentType: contentType);
 
   @override
-  Future<WebFBundle> resolve(int? contextId) async {
-    super.resolve(contextId);
+  Future<void> obtainData() async {
+    if (data != null) return;
+
     final Uri? _resolvedUri = resolvedUri;
     if (_resolvedUri != null) {
       final String assetName = getAssetName(_resolvedUri);
@@ -245,7 +248,6 @@ class AssetsBundle extends WebFBundle with _ExtensionContentTypeResolver {
     } else {
       _failedToResolveBundle(url);
     }
-    return this;
   }
 
   /// Get flutter asset name from uri scheme asset.
@@ -264,11 +266,11 @@ class AssetsBundle extends WebFBundle with _ExtensionContentTypeResolver {
 
 /// The bundle that source from local io.
 class FileBundle extends WebFBundle with _ExtensionContentTypeResolver {
-  FileBundle(String url) : super(url);
+  FileBundle(String url, { ContentType? contentType }) : super(url, contentType: contentType);
 
   @override
-  Future<WebFBundle> resolve(int? contextId) async {
-    super.resolve(contextId);
+  Future<void> obtainData() async {
+    if (data != null) return;
 
     Uri uri = _uri!;
     final String path = uri.path;
@@ -279,15 +281,12 @@ class FileBundle extends WebFBundle with _ExtensionContentTypeResolver {
     } else {
       _failedToResolveBundle(url);
     }
-    return this;
   }
 }
 
 /// [_ExtensionContentTypeResolver] is useful for [WebFBundle] to determine
 /// content-type by uri's extension.
 mixin _ExtensionContentTypeResolver on WebFBundle {
-  ContentType? _contentType;
-
   @override
   ContentType get contentType => _contentType ??= _resolveContentType(_uri);
 

@@ -118,13 +118,13 @@ NativeValue Native_NewList(uint32_t argc, NativeValue* argv) {
 #endif
 }
 
-NativeValue Native_NewJSON(const ScriptValue& value, ExceptionState& exception_state) {
-  ScriptValue json = value.ToJSONStringify(&exception_state);
+NativeValue Native_NewJSON(JSContext* ctx, const ScriptValue& value, ExceptionState& exception_state) {
+  ScriptValue json = value.ToJSONStringify(ctx, &exception_state);
   if (exception_state.HasException()) {
     return Native_NewNull();
   }
 
-  auto native_string = json.ToNativeString();
+  auto native_string = json.ToNativeString(ctx);
 
 #if _MSC_VER
   NativeValue v{};
@@ -140,6 +140,11 @@ NativeValue Native_NewJSON(const ScriptValue& value, ExceptionState& exception_s
   };
   return result;
 #endif
+}
+
+JSPointerType GetPointerTypeOfNativePointer(NativeValue native_value) {
+  assert(native_value.tag == NativeTag::TAG_POINTER);
+  return static_cast<JSPointerType>(native_value.uint32);
 }
 
 }  // namespace webf
