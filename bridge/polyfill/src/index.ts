@@ -22,6 +22,7 @@ import { webf } from './webf';
 import { TextEncoder, TextDecoder } from './encoding';
 import { WebSocket } from './websocket'
 import { ResizeObserver } from './resize-observer';
+import { _AbortController, _AbortSignal } from './abort-signal';
 
 defineGlobalProperty('console', console);
 defineGlobalProperty('Request', Request);
@@ -45,6 +46,8 @@ defineGlobalProperty('TextEncoder', TextEncoder);
 defineGlobalProperty('TextDecoder', TextDecoder);
 defineGlobalProperty('WebSocket', WebSocket);
 defineGlobalProperty('ResizeObserver', ResizeObserver);
+defineGlobalProperty('AbortSignal', _AbortSignal);
+defineGlobalProperty('AbortController', _AbortController);
 
 function defineGlobalProperty(key: string, value: any, isEnumerable: boolean = true) {
   Object.defineProperty(globalThis, key, {

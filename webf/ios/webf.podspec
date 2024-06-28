@@ -28,8 +28,10 @@ Pod::Spec.new do |s|
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.platform = :ios, '11.0'
-  s.vendored_frameworks = 'Frameworks/*.xcframework'
-  s.resource = 'Frameworks/*.*'
+  s.prepare_command = 'bash prepare.sh'
+  s.vendored_frameworks = ['Frameworks/*.xcframework']
+  s.resource = 'Frameworks/*.xcframework'
+
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end
