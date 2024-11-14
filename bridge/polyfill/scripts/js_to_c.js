@@ -1,5 +1,5 @@
 const minimist = require('minimist');
-const Qjsc = require('qjsc');
+const Qjsc = require('@openwebf/wbc/qjsc');
 const argv = minimist(process.argv.slice(2));
 const path = require('path');
 const fs = require('fs');
