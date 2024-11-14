@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: ^0.18.0 # Pure dart module. DO NOT MODIFY UNLESS FLUTTER SDK UPDATED.
+  intl: ">=0.17.0 <1.0.0" # Pure dart module. DO NOT MODIFY UNLESS FLUTTER SDK UPDATED.
 
   path: ^1.8.1 # Pure dart module.
   meta: ^1.7.0 # Pure dart module.
@@ -22,7 +22,7 @@ dependencies:
   vector_math: ^2.1.2 # Pure dart module.
   source_span: ^1.9.0 # Pure dart module.
   archive: ^3.3.7 # Pure dart module.
-  web_socket_channel: ^2.2.0
+  web_socket_channel: ^3.0.0
   flutter_svg: ^2.0.0
 
 dev_dependencies:
