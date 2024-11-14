@@ -53,6 +53,7 @@
 #include "qjs_html_template_element.h"
 #include "qjs_html_textarea_element.h"
 #include "qjs_html_unknown_element.h"
+#include "qjs_hybrid_router_change_event.h"
 #include "qjs_image.h"
 #include "qjs_inline_css_style_declaration.h"
 #include "qjs_input_event.h"
@@ -65,6 +66,7 @@
 #include "qjs_mutation_observer.h"
 #include "qjs_mutation_observer_registration.h"
 #include "qjs_mutation_record.h"
+#include "qjs_native_loader.h"
 #include "qjs_node.h"
 #include "qjs_node_list.h"
 #include "qjs_performance.h"
@@ -117,6 +119,7 @@ void InstallBindings(ExecutingContext* context) {
   QJSMessageEvent::Install(context);
   QJSAnimationEvent::Install(context);
   QJSCloseEvent::Install(context);
+  QJSHybridRouterChangeEvent::Install(context);
   QJSFocusEvent::Install(context);
   QJSGestureEvent::Install(context);
   QJSHashchangeEvent::Install(context);
@@ -197,6 +200,7 @@ void InstallBindings(ExecutingContext* context) {
   QJSSVGEllipseElement::Install(context);
   QJSSVGStyleElement::Install(context);
   QJSSVGLineElement::Install(context);
+  QJSNativeLoader::Install(context);
 
   // Legacy bindings, not standard.
   QJSElementAttributes::Install(context);

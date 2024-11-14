@@ -20,6 +20,7 @@
 #include "foundation/native_value_converter.h"
 #include "html_element_type_helper.h"
 #include "mutation_observer_interest_group.h"
+#include "plugin_api/element.h"
 #include "qjs_element.h"
 #include "text.h"
 
@@ -341,6 +342,11 @@ void Element::Trace(GCVisitor* visitor) const {
     element_data_->Trace(visitor);
   }
   ContainerNode::Trace(visitor);
+}
+
+const ElementPublicMethods* Element::elementPublicMethods() {
+  static ElementPublicMethods element_public_methods;
+  return &element_public_methods;
 }
 
 // https://dom.spec.whatwg.org/#concept-element-qualified-name

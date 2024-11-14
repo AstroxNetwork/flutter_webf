@@ -10,7 +10,7 @@ on:
 env:
   nodeVersion: '18'
   cmakeVersion: "3.26.3"
-  flutterVersion: "3.13.5"
+  flutterVersion: "3.24.0"
 
 jobs:
   build_windows-app_in_windows:
@@ -53,8 +53,8 @@ jobs:
           node-version: ${{ env.nodeVersion }}
       - uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          distribution: "temurin"
+          java-version: "17"
       - uses: jwlawson/actions-setup-cmake@v1.11
         with:
           cmake-version: ${{ env.cmakeVersion }}

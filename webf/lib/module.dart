@@ -7,6 +7,7 @@ export 'src/module/async_storage.dart';
 export 'src/module/clipboard.dart';
 export 'src/module/fetch.dart';
 export 'src/module/history.dart';
+export 'src/module/hybrid_history.dart';
 export 'src/module/local_storage.dart';
 export 'src/module/location.dart';
 export 'src/module/method_channel.dart';

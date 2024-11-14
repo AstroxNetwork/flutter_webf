@@ -148,14 +148,18 @@ export function isTypeHaveNull(type: ParameterType): boolean {
   return type.value.some(t => t.value === FunctionArgumentType.null);
 }
 
-export function isTypeHaveString(types: ParameterType[]): boolean {
-  return types.some(t => {
-    if (t.isArray) return isTypeHaveString(t.value as ParameterType[]);
-    if (!Array.isArray(t.value)) {
-      return t.value === FunctionArgumentType.dom_string;
-    }
-    return t.value.some(t => t.value === FunctionArgumentType.dom_string);
-  });
+export function isTypeHaveString(types: ParameterType[] | ParameterType): boolean {
+  if (Array.isArray(types)) {
+    return types.some(t => {
+      if (t.isArray) return isTypeHaveString(t.value as ParameterType);
+      if (!Array.isArray(t.value)) {
+        return t.value === FunctionArgumentType.dom_string;
+      }
+      return t.value.some(t => t.value === FunctionArgumentType.dom_string);
+    });
+  }
+
+  return types.value === FunctionArgumentType.dom_string;
 }
 
 export function isPointerType(type: ParameterType): boolean {
@@ -530,16 +534,16 @@ function generateFunctionBody(blob: IDLBlob, declare: FunctionDeclaration, optio
   ExceptionState exception_state;
   ExecutingContext* context = ExecutingContext::From(ctx);
   if (!context->IsContextValid()) return JS_NULL;
-  
+
   context->dartIsolateContext()->profiler()->StartTrackSteps("${getClassName(blob)}::${declare.name}");
-  
+
   MemberMutationScope scope{context};
   ${returnValueInit}
 
   do {  // Dummy loop for use of 'break'.
 ${addIndent(callBody, 4)}
   } while (false);
-  
+
    context->dartIsolateContext()->profiler()->FinishTrackSteps();
 
   if (UNLIKELY(exception_state.HasException())) {
@@ -585,7 +589,7 @@ export function generateCppSource(blob: IDLBlob, options: GenerateOptions) {
 
         object.props.forEach(addObjectProps);
 
-        let overloadMethods = {};
+        let overloadMethods: {[key: string]: FunctionDeclaration[] } = {};
         let filtedMethods: FunctionDeclaration[] = [];
         object.methods.forEach(addObjectMethods);
 
