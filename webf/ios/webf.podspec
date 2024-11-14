@@ -1,18 +1,6 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
 #
-`
-for FRAMEWORK in \
-  "quickjs.xcframework" \
-  "webf_bridge.xcframework" ; do
-  if [ -L $FRAMEWORK ]; then
-    echo "Recreating ${FRAMEWORK} link..."
-    rm $FRAMEWORK
-    ln -s "../../../bridge/build/ios/framework/${FRAMEWORK}" $FRAMEWORK
-  fi
-done
-`
-
 Pod::Spec.new do |s|
   s.name             = 'webf'
   s.version          = '0.14.0'
