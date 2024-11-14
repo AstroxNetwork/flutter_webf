@@ -12,18 +12,20 @@ p.appendChild(text2);
 
 var kkk = BigInt(3);
 var ddd = 3n;
+var kkkText = document.createTextNode(`BigInt: ${kkk}`);
+var dddText = document.createTextNode(`BigInt: ${kkk}`);
+p.appendChild(kkkText);
+p.appendChild(dddText);
+
 const t = new TextEncoder();
 const bytes = t.encode('asdf');
 console.log(bytes);
 
-console.log({ kkk });
-console.log({ ddd });
 document.body.appendChild(p);
 console.log(globalThis.callf('test', 's'));
 
-// const audio = new AudioPlayer('http://downsc.chinaz.net/Files/DownLoad/sound1/201906/11582.mp3');
-// console.log(audio);
 (async () => {
   var aaa = new AudioPlayer('http://downsc.chinaz.net/Files/DownLoad/sound1/201906/11582.mp3');
   await aaa.initialize();
+  await aaa.play();
 })();
