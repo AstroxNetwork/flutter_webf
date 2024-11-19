@@ -29,7 +29,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   test: ^1.20.2
-  lints: ^2.1.1
+  flutter_lints: any
 
 flutter:
   plugin:

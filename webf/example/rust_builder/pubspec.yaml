@@ -1,7 +1,7 @@
-name: example_app
+name: example_rust_builder
 description: "A new Flutter FFI plugin project."
 version: 0.0.1
-homepage:
+publish_to: none
 
 environment:
   sdk: '>=3.3.1 <4.0.0'
@@ -12,11 +12,9 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
+  flutter_lints:
   ffi: ^2.1.0
   ffigen: ^9.0.1
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

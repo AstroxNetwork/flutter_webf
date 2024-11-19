@@ -1,36 +1,22 @@
 name: webf_example
 description: Demonstrates how to use the webf plugin.
-
-# The following line prevents the package from being accidentally published to
-# pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=2.17.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  example_app:
+  example_rust_builder:
     path: rust_builder
 
   webf:
-    path: ../
   webf_callf:
-    path: ../../../plugins/packages/webf_callf/callf
   webf_audio_player:
-    path: ../../../plugins/packages/audio
   webf_websocket:
-    path: ../../../plugins/packages/webf_websocket
 
-  media_kit: any
-
-# When depending on this package from a real application,
-# you should remove the following overrides.
-# See https://dart.dev/tools/pub/dependencies#version-constraints
-# The example app is bundled with the plugin so we use a path dependency on
-# the parent directory to use the current plugin's version.
 dependency_overrides:
   webf:
     path: ../
@@ -41,10 +27,10 @@ dependency_overrides:
   webf_websocket:
     path: ../../../plugins/packages/webf_websocket
 
-# The following section is specific to Flutter.
 flutter:
   uses-material-design: true
-
+  assets:
+    - assets/
   fonts:
     - family: AlibabaPuHuiTi
       fonts:
@@ -85,7 +71,3 @@ flutter:
     - family: AlibabaSans-Black
       fonts:
         - asset: fonts/AlibabaSans-Black.otf
-
-
-  assets:
-    - assets/

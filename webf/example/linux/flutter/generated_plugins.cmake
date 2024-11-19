@@ -10,7 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
   agent_dart
-  example_app
+  example_rust_builder
   media_kit_native_event_loop
 )
 
